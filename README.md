@@ -1,90 +1,51 @@
 ```markdown
-# PurchaseOrderAPI
-
-API em C# (.NET 6+) para gerenciamento do fluxo de Pedidos de Compras.
-
-## Estrutura do Projeto
+## Estrutura do Projeto PurchaseOrderAPI
 
 ```
-
+```
 PurchaseOrderAPI/
 │
 ├── Controllers/
-│   └── PurchaseOrdersController.cs
+│   └── PurchaseOrdersController.cs       # Endpoints da API
 │
 ├── Application/
 │   ├── DTOs/
-│   │   ├── CreateOrderDto.cs
-│   │   └── OrderResponseDto.cs
+│   │   ├── CreateOrderDto.cs             # DTO para criar pedido (vazio / futuro)
+│   │   └── OrderResponseDto.cs           # DTO de resposta (vazio / futuro)
 │   │
 │   └── Services/
-│       └── PurchaseOrderService.cs
+│       └── PurchaseOrderService.cs       # Lógica de criação, aprovação e fluxo
 │
 ├── Domain/
 │   ├── Entities/
-│   │   ├── PurchaseOrder.cs
-│   │   ├── PurchaseOrderItem.cs
-│   │   ├── Approval.cs
-│   │   ├── User.cs
-│   │   └── OrderHistory.cs
+│   │   ├── PurchaseOrder.cs              # Entidade Pedido
+│   │   ├── PurchaseOrderItem.cs          # Entidade Item do Pedido
+│   │   ├── Approval.cs                    # Entidade Aprovação
+│   │   ├── User.cs                        # Entidade Usuário
+│   │   └── OrderHistory.cs               # Histórico de ações
 │   │
 │   └── Enums/
-│       ├── OrderStatus.cs
-│       ├── ApprovalStatus.cs
-│       └── UserRole.cs
+│       ├── OrderStatus.cs                 # Status do Pedido
+│       ├── ApprovalStatus.cs              # Status da Aprovação
+│       └── UserRole.cs                    # Papel do Usuário
 │
 ├── Infrastructure/
 │   ├── Data/
-│   │   └── AppDbContext.cs
+│   │   └── AppDbContext.cs               # DbContext EF Core
 │   │
-│   └── Repositories/
-│       └── (a implementar)
+│   └── Repositories/                      # Futuras implementações de repositório
 │
 ├── Configurations/
-│   └── DependencyInjection.cs
+│   └── DependencyInjection.cs             # Configurações de DI (vazio / futuro)
 │
-├── Migrations/
+├── Migrations/                            # Migrations do EF Core
 │
-├── Program.cs
-├── PurchaseOrderAPI.csproj
-├── appsettings.json
-├── appsettings.Development.json
-├── PurchaseOrderAPI.http (opcional para testes)
-└── README.md
+├── Program.cs                             # Inicialização da aplicação
+├── PurchaseOrderAPI.csproj                # Projeto .NET
+├── appsettings.json                        # Configurações gerais
+├── appsettings.Development.json            # Configurações dev
+├── PurchaseOrderAPI.http (opcional)       # Testes de requisição (Postman/Insomnia)
+└── README.md                               # Documentação do projeto
 
-````
-
-## Funcionalidades
-
-- Criar pedidos de compra com múltiplos itens
-- Aprovação sequencial por alçadas (Suprimentos → Gestor → Diretor)
-- Solicitar revisão de pedidos
-- Concluir pedidos
-- Histórico de ações do pedido
-
-## Tecnologias
-
-- .NET 6+
-- Entity Framework Core
-- SQL Server / Azure SQL
-
-## Configuração
-
-1. Atualize `appsettings.json` com sua connection string:
-```json
-"ConnectionStrings": {
-  "DefaultConnection": "Server=VICTOR\\SQLEXPRESS;Database=PurchaseDB;Trusted_Connection=True;TrustServerCertificate=True"
-}
-````
-
-2. Criar e aplicar migrations:
-
-```bash
-dotnet ef database update
 ```
 
-3. Rodar a API:
-
-```bash
-dotnet run
-```
