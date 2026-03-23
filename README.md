@@ -161,6 +161,42 @@ dotnet ef database update
 ```bash
 dotnet run
 ```
+## 🔄 Reset do Banco de Dados (opcional)
+
+Caso precise recriar o banco do zero (muito útil durante desenvolvimento):
+
+### 🧨 Remover banco atual
+
+```bash
+dotnet ef database drop --force
+```
+
+---
+
+### 🧱 Recriar banco com migrations
+
+```bash
+dotnet ef database update
+```
+
+---
+
+### 🔁 Reset completo (fluxo mais seguro)
+
+```bash
+dotnet ef database drop --force
+dotnet ef migrations remove
+dotnet ef migrations add InitialCreate
+dotnet ef database update
+```
+
+---
+
+### ⚠️ Observações importantes
+
+* O comando `drop` apaga **TODOS os dados**
+* Use apenas em ambiente de desenvolvimento
+* Se der erro de migration pendente, sempre recrie
 
 ---
 
