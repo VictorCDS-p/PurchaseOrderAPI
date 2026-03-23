@@ -1,0 +1,183 @@
+{
+  "info": {
+    "name": "PurchaseOrderAPI",
+    "_postman_id": "11111111-2222-3333-4444-555555555555",
+    "description": "Coleção para testar o fluxo completo do PurchaseOrderAPI",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Criar Pedido",
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type","value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"items\": [\n    {\"productName\": \"Caneta\", \"quantity\": 5, \"unitPrice\": 10},\n    {\"productName\": \"Caderno\", \"quantity\": 2, \"unitPrice\": 50}\n  ],\n  \"userId\": 1\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5139/api/purchaseorders",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5139",
+          "path": ["api","purchaseorders"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"TotalAmount calculado corretamente\", () => {",
+              "    const json = pm.response.json();",
+              "    pm.expect(json.totalAmount).to.eql(5*10 + 2*50);",
+              "});",
+              "pm.test(\"Pedido tem histórico\", () => {",
+              "    const json = pm.response.json();",
+              "    pm.expect(json.history.length).to.be.above(0);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Listar Pedidos",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:5139/api/purchaseorders",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5139",
+          "path": ["api","purchaseorders"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Retorna array\", () => {",
+              "    const json = pm.response.json();",
+              "    pm.expect(json).to.be.an(\"array\");",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Aprovar Pedido",
+      "request": {
+        "method": "PATCH",
+        "url": {
+          "raw": "http://localhost:5139/api/purchaseorders/1/approve",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5139",
+          "path": ["api","purchaseorders","1","approve"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Pedido aprovado parcialmente ou totalmente\", () => {",
+              "    const json = pm.response.json();",
+              "    pm.expect(json.approvals.some(a => a.status === \"Approved\")).to.be.true;",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Solicitar Revisão",
+      "request": {
+        "method": "PATCH",
+        "url": {
+          "raw": "http://localhost:5139/api/purchaseorders/1/request-review",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5139",
+          "path": ["api","purchaseorders","1","request-review"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Pedido voltou para revisão\", () => {",
+              "    const json = pm.response.json();",
+              "    pm.expect(json.status).to.eql(\"InReview\");",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Concluir Pedido",
+      "request": {
+        "method": "PATCH",
+        "url": {
+          "raw": "http://localhost:5139/api/purchaseorders/1/complete",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5139",
+          "path": ["api","purchaseorders","1","complete"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Pedido concluído\", () => {",
+              "    const json = pm.response.json();",
+              "    pm.expect(json.status).to.eql(\"Completed\");",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Histórico do Pedido",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:5139/api/purchaseorders/1/history",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5139",
+          "path": ["api","purchaseorders","1","history"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Histórico não vazio\", () => {",
+              "    const json = pm.response.json();",
+              "    pm.expect(json.length).to.be.above(0);",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

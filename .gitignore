@@ -1,0 +1,33 @@
+# Build results
+bin/
+obj/
+
+# Visual Studio / Rider / VS Code
+.vs/
+*.user
+*.suo
+*.vscode/
+*.idea/
+
+# ASP.NET
+wwwroot/
+appsettings*.json
+
+# EF Core Migrations database snapshots (opcional, se não quiser versionar)
+Migrations/*Snapshot*.cs
+
+# Logs
+*.log
+
+# User secrets (quando usar dotnet user-secrets)
+secrets.json
+
+# Publish / deployment
+publish/
+*.zip
+*.tar.gz
+
+# NuGet
+*.nupkg
+packages/
+.nuget/
