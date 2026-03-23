@@ -246,16 +246,6 @@ Com:
 
 ---
 
-## 📌 Observações
-
-* Código em inglês
-* Comentários em português
-* Arquitetura organizada em camadas
-* Uso de DTOs para desacoplamento
-* Pronto para expansão (Repository, DI, etc.)
-
----
-
 ## ✅ Status do Projeto
 
 ✔ CRUD de pedidos
@@ -264,7 +254,6 @@ Com:
 ✔ Cancelamento
 ✔ Histórico rastreável
 ✔ Collection Postman
-✔ Estrutura profissional
 
 ---
 
