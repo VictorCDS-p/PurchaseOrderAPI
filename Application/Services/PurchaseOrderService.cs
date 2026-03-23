@@ -1,123 +1,185 @@
 using PurchaseOrderAPI.Domain.Entities;
 using PurchaseOrderAPI.Domain.Enums;
-using PurchaseOrderAPI.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
+using PurchaseOrderAPI.Infrastructure.Repositories;
 
 namespace PurchaseOrderAPI.Application.Services
 {
     public class PurchaseOrderService
     {
-        private readonly AppDbContext _context;
+        private readonly IPurchaseOrderRepository _repository;
+        private readonly UserService _userService;
 
-        public PurchaseOrderService(AppDbContext context)
+        public PurchaseOrderService(IPurchaseOrderRepository repository, UserService userService)
         {
-            _context = context;
+            _repository = repository;
+            _userService = userService;
         }
 
-        public PurchaseOrder Create(PurchaseOrder order)
+        public (PurchaseOrder order, string message) Create(PurchaseOrder order, int userId)
         {
+            var (user, _) = _userService.GetById(userId);
+
             if (order.Items == null || !order.Items.Any())
-                throw new Exception("Pedido deve ter pelo menos 1 item");
+                throw new Exception("Pedido inválido: deve conter pelo menos 1 item.");
+
+            order.UserId = user.Id;
+            order.User = user;
 
             order.TotalAmount = order.Items.Sum(i => i.Quantity * i.UnitPrice);
             order.Approvals = GenerateApprovals(order.TotalAmount);
             order.Status = OrderStatus.PendingApproval;
-            order.History.Add(new OrderHistory { Action = "Pedido criado" });
 
-            _context.PurchaseOrders.Add(order);
-            _context.SaveChanges();
+            order.History.Add(new OrderHistory
+            {
+                Action = $"Pedido criado pelo usuário {user.Name}",
+                UserId = user.Id
+            });
 
-            return order;
+            _repository.Add(order);
+
+            return (order, $"Pedido criado com sucesso. Total: {order.TotalAmount:C2}");
         }
 
-        public List<PurchaseOrder> GetAll()
+        public (List<PurchaseOrder> orders, string message) GetAll()
         {
-            return _context.PurchaseOrders
-                .Include(o => o.Items)
-                .Include(o => o.Approvals)
-                .Include(o => o.History)
-                .ToList();
+            var orders = _repository.GetAll();
+            return (orders, orders.Any() ? $"Encontrados {orders.Count} pedidos." : "Nenhum pedido encontrado.");
         }
 
-        public PurchaseOrder Approve(int orderId)
+        public (PurchaseOrder order, string message) Approve(int orderId, int userId)
         {
-            var order = _context.PurchaseOrders
-                .Include(o => o.Approvals)
-                .Include(o => o.History)
-                .FirstOrDefault(o => o.Id == orderId);
+            var order = _repository.GetById(orderId)
+                        ?? throw new Exception($"Pedido {orderId} não encontrado.");
 
-            if (order == null)
-                throw new Exception("Pedido não encontrado");
+            if (order.Status == OrderStatus.Cancelled)
+                throw new Exception("Pedido cancelado não pode ser aprovado.");
 
-            var nextApproval = order.Approvals.FirstOrDefault(a => a.Status == ApprovalStatus.Pending);
-            if (nextApproval == null)
-                throw new Exception("Pedido já aprovado");
+            if (order.Status == OrderStatus.Completed)
+                throw new Exception("Pedido já finalizado.");
+
+            var (user, _) = _userService.GetById(userId);
+
+            var nextApproval = order.Approvals
+                .FirstOrDefault(a => a.Status == ApprovalStatus.Pending)
+                ?? throw new Exception("Não há aprovações pendentes.");
+
+            if (user.Role != nextApproval.Role)
+                throw new Exception($"Usuário {user.Name} não tem permissão ({nextApproval.Role}).");
 
             nextApproval.Status = ApprovalStatus.Approved;
-            order.History.Add(new OrderHistory { Action = $"Aprovado por {nextApproval.Role}" });
+            nextApproval.UserId = user.Id;
+
+            order.History.Add(new OrderHistory
+            {
+                Action = $"Pedido aprovado por {user.Name}",
+                UserId = user.Id
+            });
 
             if (order.Approvals.All(a => a.Status == ApprovalStatus.Approved))
             {
                 order.Status = OrderStatus.Completed;
-                order.History.Add(new OrderHistory { Action = "Pedido finalizado" });
+
+                order.History.Add(new OrderHistory
+                {
+                    Action = "Pedido finalizado após todas as aprovações",
+                    UserId = user.Id
+                });
             }
 
-            _context.SaveChanges();
-            return order;
+            _repository.Update(order);
+            return (order, $"Aprovado por {user.Name}");
         }
 
-        public PurchaseOrder RequestReview(int orderId)
+        public (PurchaseOrder order, string message) RequestReview(int orderId, int userId)
         {
-            var order = _context.PurchaseOrders
-                .Include(o => o.Approvals)
-                .Include(o => o.History)
-                .FirstOrDefault(o => o.Id == orderId);
+            var order = _repository.GetById(orderId)
+                        ?? throw new Exception($"Pedido {orderId} não encontrado.");
 
-            if (order == null)
-                throw new Exception("Pedido não encontrado");
+            if (order.Status == OrderStatus.Cancelled)
+                throw new Exception("Pedido cancelado não pode ser alterado.");
+
+            var (user, _) = _userService.GetById(userId);
 
             order.Status = OrderStatus.PendingApproval;
+
             foreach (var approval in order.Approvals)
                 approval.Status = ApprovalStatus.Pending;
 
-            order.History.Add(new OrderHistory { Action = "Solicitação de revisão" });
+            order.History.Add(new OrderHistory
+            {
+                Action = $"Pedido retornou para revisão por {user.Name}",
+                UserId = user.Id
+            });
 
-            _context.SaveChanges();
-            return order;
+            _repository.Update(order);
+            return (order, "Pedido enviado para revisão.");
         }
 
-        public PurchaseOrder Complete(int orderId)
+        public (PurchaseOrder order, string message) Complete(int orderId, int userId)
         {
-            var order = _context.PurchaseOrders
-                .Include(o => o.Approvals)
-                .Include(o => o.History)
-                .FirstOrDefault(o => o.Id == orderId);
+            var order = _repository.GetById(orderId)
+                        ?? throw new Exception($"Pedido {orderId} não encontrado.");
 
-            if (order == null)
-                throw new Exception("Pedido não encontrado");
+            if (order.Status == OrderStatus.Cancelled)
+                throw new Exception("Pedido cancelado não pode ser concluído.");
+
+            var (user, _) = _userService.GetById(userId);
 
             order.Status = OrderStatus.Completed;
-            order.History.Add(new OrderHistory { Action = "Pedido concluído" });
 
-            _context.SaveChanges();
-            return order;
+            order.History.Add(new OrderHistory
+            {
+                Action = $"Pedido concluído manualmente por {user.Name}",
+                UserId = user.Id
+            });
+
+            _repository.Update(order);
+            return (order, "Pedido concluído.");
         }
 
-        public List<OrderHistory> GetHistory(int orderId)
+        public (PurchaseOrder order, string message) Cancel(int orderId, int userId)
         {
-            var order = _context.PurchaseOrders
-                .Include(o => o.History)
-                .FirstOrDefault(o => o.Id == orderId);
+            var order = _repository.GetById(orderId)
+                        ?? throw new Exception($"Pedido {orderId} não encontrado.");
 
-            if (order == null)
-                throw new Exception("Pedido não encontrado");
+            if (order.Status == OrderStatus.Completed)
+                throw new Exception("Pedido finalizado não pode ser cancelado.");
 
-            return order.History.OrderBy(h => h.CreatedAt).ToList();
+            if (order.Status == OrderStatus.Cancelled)
+                throw new Exception("Pedido já cancelado.");
+
+            var (user, _) = _userService.GetById(userId);
+
+            order.Status = OrderStatus.Cancelled;
+
+            order.History.Add(new OrderHistory
+            {
+                Action = $"Pedido cancelado por {user.Name}",
+                UserId = user.Id
+            });
+
+            _repository.Update(order);
+            return (order, $"Cancelado por {user.Name}");
+        }
+
+        public (List<OrderHistory> history, string message) GetHistory(int orderId)
+        {
+            var order = _repository.GetById(orderId)
+                        ?? throw new Exception($"Pedido {orderId} não encontrado.");
+
+            var history = order.History
+                .OrderBy(h => h.CreatedAt)
+                .ToList();
+
+            return (history, $"Histórico contém {history.Count} registros.");
         }
 
         private List<Approval> GenerateApprovals(decimal total)
         {
-            var approvals = new List<Approval> { new Approval { Role = UserRole.Supply } };
+            var approvals = new List<Approval>
+            {
+                new Approval { Role = UserRole.Supply }
+            };
 
             if (total > 100)
                 approvals.Add(new Approval { Role = UserRole.Manager });

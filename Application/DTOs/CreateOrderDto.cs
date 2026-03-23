@@ -1,0 +1,17 @@
+using System.Collections.Generic;
+
+namespace PurchaseOrderAPI.Application.DTOs
+{
+    public class CreateOrderDto
+    {
+        public int UserId { get; set; }
+        public List<OrderItemDto> Items { get; set; } = new();
+    }
+
+    public class OrderItemDto
+    {
+        public string ProductName { get; set; } = string.Empty;
+        public int Quantity { get; set; }
+        public decimal UnitPrice { get; set; }
+    }
+}
