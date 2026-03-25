@@ -1,11 +1,3 @@
-Perfeito — vou te devolver um README já no padrão **profissional**, com:
-
-✔ pasta `docs/diagrams`
-✔ seção de diagramas separada
-✔ pronto pra você só colar as imagens
-
----
-
 # 🧾 PurchaseOrderAPI
 
 API REST desenvolvida em **C# (.NET 10)** para simular um processo de pedido de compras com fluxo de aprovação hierárquico, conforme especificação do desafio técnico.
@@ -242,13 +234,3 @@ Com:
 Desenvolvido como parte de desafio técnico back-end.
 
 ---
-
-# 🚀 O que você ganhou aqui
-
-✔ README organizado nível profissional
-✔ Diagramas bem posicionados
-✔ Estrutura clara (isso conta MUITO)
-
----
-
-Se quiser, posso dar um último check tipo recrutador antes de você enviar 👀
