@@ -1,23 +1,23 @@
-# 🧾 PurchaseOrderAPI
+# PurchaseOrderAPI
 
-API REST desenvolvida em **C# (.NET 10)** para simular um processo de pedido de compras com fluxo de aprovação hierárquico, conforme especificação do desafio técnico.
+API REST desenvolvida em **C# (.NET 10)** para simular o processo de pedidos de compra com fluxo de aprovação hierárquico, conforme especificação do desafio técnico.
 
 ---
 
-## 🎯 Objetivo
+## Objetivo
 
-Implementar uma API que represente o ciclo completo de um pedido de compra dentro de uma empresa, incluindo:
+Implementar uma API que represente o ciclo completo de um pedido de compra dentro de uma organização, contemplando:
 
 * Criação de pedidos
 * Cálculo automático de valores
 * Fluxo de aprovação por alçada
 * Solicitação de revisão
-* Cancelamento
-* Histórico completo de ações
+* Cancelamento de pedidos
+* Registro completo do histórico de ações
 
 ---
 
-## ⚙️ Tecnologias Utilizadas
+## Tecnologias Utilizadas
 
 * .NET 10
 * ASP.NET Core Web API
@@ -27,7 +27,7 @@ Implementar uma API que represente o ciclo completo de um pedido de compra dentr
 
 ---
 
-## 📁 Estrutura do Projeto
+## Estrutura do Projeto
 
 ```
 PurchaseOrderAPI/
@@ -66,46 +66,48 @@ PurchaseOrderAPI/
 
 ---
 
-## 📐 Diagramas
+## Diagramas
 
-### 📦 Diagrama de Classes
+### Diagrama de Classes
 
 ![Class Diagram](docs/diagrams/class-diagram.png)
 
 ---
 
-### 🔄 Diagrama de Atividades
+### Diagrama de Atividades
 
 ![Activity Diagram](docs/diagrams/activity-diagram.png)
 
 ---
 
-### 🗄️ Diagrama de Banco de Dados
+### Diagrama de Banco de Dados
 
 ![Database Diagram](docs/diagrams/database-diagram.png)
 
 ---
 
-## 📌 Regras de Negócio Implementadas
+## Regras de Negócio Implementadas
 
-✔ Pedido deve ter pelo menos 1 item
-✔ Cálculo automático do valor total
+* O pedido deve conter pelo menos um item
+* O valor total é calculado automaticamente com base nos itens
 
-✔ Aprovação por alçada:
+### Fluxo de aprovação por alçada:
 
-* Até R$100 → Supply
-* R$101 até R$1000 → Supply + Manager
-* Acima de R$1000 → Supply + Manager + Director
+* Até R$ 100: aprovação pela área de Supply
+* De R$ 101 até R$ 1000: aprovação por Supply e Manager
+* Acima de R$ 1000: aprovação por Supply, Manager e Director
 
-✔ Aprovação sequencial obrigatória
-✔ Solicitação de revisão reinicia fluxo
-✔ Histórico completo de ações
-✔ Pedido só finaliza após todas aprovações
-✔ Cancelamento disponível em qualquer etapa
+### Regras adicionais:
+
+* O processo de aprovação é sequencial
+* Qualquer aprovador pode solicitar revisão, reiniciando o fluxo
+* Todas as ações são registradas no histórico do pedido
+* O pedido só é concluído após todas as aprovações exigidas
+* O pedido pode ser cancelado em qualquer etapa, exceto após conclusão
 
 ---
 
-## 🔧 Configuração do Banco de Dados
+## Configuração do Banco de Dados
 
 Arquivo:
 
@@ -113,7 +115,7 @@ Arquivo:
 appsettings.Development.json
 ```
 
-Exemplo:
+Exemplo de configuração:
 
 ```json
 {
@@ -123,17 +125,17 @@ Exemplo:
 }
 ```
 
-### ⚠️ Altere conforme seu ambiente:
+Parâmetros:
 
 | Campo        | Descrição                                     |
 | ------------ | --------------------------------------------- |
 | SEU_SERVIDOR | Nome do servidor (ex: localhost, DESKTOP-123) |
 | INSTANCIA    | Nome da instância (ex: SQLEXPRESS)            |
-| PurchaseDB   | Nome do banco                                 |
+| PurchaseDB   | Nome do banco de dados                        |
 
 ---
 
-## 🚀 Como Executar o Projeto
+## Execução do Projeto
 
 ### 1. Restaurar dependências
 
@@ -141,19 +143,19 @@ Exemplo:
 dotnet restore
 ```
 
-### 2. Criar migration (caso não exista)
+### 2. Criar migration (caso necessário)
 
 ```bash
 dotnet ef migrations add InitialCreate
 ```
 
-### 3. Atualizar banco de dados
+### 3. Aplicar migrations no banco
 
 ```bash
 dotnet ef database update
 ```
 
-### 4. Rodar a aplicação
+### 4. Executar a aplicação
 
 ```bash
 dotnet run
@@ -161,7 +163,7 @@ dotnet run
 
 ---
 
-## 🔄 Reset do Banco de Dados (opcional)
+## Reset do Banco de Dados (Opcional)
 
 ```bash
 dotnet ef database drop --force
@@ -170,11 +172,13 @@ dotnet ef migrations add InitialCreate
 dotnet ef database update
 ```
 
+**Observação:** Este processo remove todos os dados e deve ser utilizado apenas em ambiente de desenvolvimento.
+
 ---
 
-## 🌐 Acessar API
+## Acesso à API
 
-Swagger:
+Swagger disponível em:
 
 ```
 http://localhost:5139/swagger
@@ -182,55 +186,54 @@ http://localhost:5139/swagger
 
 ---
 
-## 📬 Testes com Postman
+## Testes
 
-Importe a collection:
+Importe a collection disponível em:
 
 ```
 postman/PurchaseOrderAPI.postman_collection.json
 ```
 
-Fluxo recomendado:
+Fluxo sugerido de testes:
 
 1. Criar usuários
 2. Criar pedido
-3. Aprovar (Supply → Manager → Director)
+3. Executar aprovações sequenciais (Supply → Manager → Director)
 4. Consultar histórico
-5. Testar revisão/cancelamento
+5. Testar cenários de revisão e cancelamento
 
 ---
 
-## 📊 Histórico do Pedido
+## Histórico do Pedido
 
-O sistema registra automaticamente:
+O sistema registra automaticamente as seguintes ações:
 
 * Criação
-* Aprovações
-* Revisões
+* Aprovação
+* Solicitação de revisão
 * Cancelamento
 * Conclusão
 
-Com:
+Cada registro contém:
 
 * Usuário responsável
-* Data/hora
-* Ação executada
+* Data e hora
+* Tipo de ação executada
 
 ---
 
-## ✅ Status do Projeto
+## Status do Projeto
 
-✔ CRUD de pedidos
-✔ Fluxo de aprovação completo
-✔ Revisão
-✔ Cancelamento
-✔ Histórico rastreável
-✔ Collection Postman
+* CRUD de pedidos implementado
+* Fluxo completo de aprovação
+* Suporte a revisão e cancelamento
+* Histórico rastreável
+* Collection de testes disponível
 
 ---
 
-## 👨‍💻 Autor
+## Autor
 
-Desenvolvido como parte de desafio técnico back-end.
+Desenvolvido como parte de um desafio técnico para vaga de estágio em desenvolvimento back-end.
 
 ---
