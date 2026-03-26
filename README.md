@@ -234,6 +234,6 @@ Cada registro contém:
 
 ## Autor
 
-Desenvolvido como parte de um desafio técnico para vaga de estágio em desenvolvimento back-end.
+Desenvolvido como parte de um desafio técnico para uma vaga de back-end.
 
 ---
