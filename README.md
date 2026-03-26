@@ -109,13 +109,27 @@ PurchaseOrderAPI/
 
 ## Configuração do Banco de Dados
 
-Arquivo:
+A aplicação utiliza **arquivos de configuração por ambiente**.
+
+Por padrão, o .NET carrega automaticamente:
+
+* `appsettings.json` (configuração base)
+* `appsettings.Development.json` (configuração específica para desenvolvimento, sobrescreve a base)
+
+### Importante
+
+O arquivo `appsettings.Development.json` **não é criado automaticamente em todos os projetos**.
+Caso ele não exista, é necessário criá-lo manualmente na raiz do projeto.
+
+### Passo a passo
+
+1. Crie o arquivo:
 
 ```
 appsettings.Development.json
 ```
 
-Exemplo de configuração:
+2. Adicione a configuração de conexão com o banco:
 
 ```json
 {
@@ -125,13 +139,19 @@ Exemplo de configuração:
 }
 ```
 
-Parâmetros:
+### Parâmetros
 
 | Campo        | Descrição                                     |
 | ------------ | --------------------------------------------- |
 | SEU_SERVIDOR | Nome do servidor (ex: localhost, DESKTOP-123) |
 | INSTANCIA    | Nome da instância (ex: SQLEXPRESS)            |
 | PurchaseDB   | Nome do banco de dados                        |
+
+### Exemplo
+
+```json
+"Server=localhost\\SQLEXPRESS;Database=PurchaseDB;Trusted_Connection=True;TrustServerCertificate=True"
+```
 
 ---
 
@@ -234,6 +254,6 @@ Cada registro contém:
 
 ## Autor
 
-Desenvolvido como parte de um desafio técnico para uma vaga de back-end.
+Desenvolvido como parte de um desafio técnico para uma vaga de desenvolvimento back-end.
 
 ---
