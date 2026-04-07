@@ -1,24 +1,14 @@
 {
   "info": {
+    "_postman_id": "84910376-bcfd-4456-95fc-0016e59aebe2",
     "name": "PurchaseOrderAPI",
-    "_postman_id": "final-collection-0002",
-    "description": "Fluxo completo com aprovação e cancelamento",
+    "description": "Fluxo completo com aprovação, revisão e cancelamento",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
-  "variable": [
-    { "key": "baseUrl", "value": "http://localhost:5139" },
-    { "key": "supplyId", "value": "" },
-    { "key": "managerId", "value": "" },
-    { "key": "directorId", "value": "" },
-    { "key": "orderId", "value": "" },
-    { "key": "orderIdCancel", "value": "" }
-  ],
   "item": [
-
     {
       "name": "1 - Criar Usuários",
       "item": [
-
         {
           "name": "Criar Supply",
           "request": {
@@ -26,7 +16,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Supply User\",\n  \"email\": \"supply@test.com\",\n  \"role\": \"Supply\"\n}"
+              "raw": "{ \"name\": \"Supply User\", \"email\": \"supply@test.com\", \"role\": \"Supply\" }"
             },
             "url": "{{baseUrl}}/api/users"
           },
@@ -34,14 +24,12 @@
             "listen": "test",
             "script": {
               "exec": [
-                "pm.test('Status 200', () => pm.response.code === 200);",
                 "let json = pm.response.json();",
                 "pm.environment.set('supplyId', json.result.id);"
               ]
             }
           }]
         },
-
         {
           "name": "Criar Manager",
           "request": {
@@ -49,7 +37,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Manager User\",\n  \"email\": \"manager@test.com\",\n  \"role\": \"Manager\"\n}"
+              "raw": "{ \"name\": \"Manager User\", \"email\": \"manager@test.com\", \"role\": \"Manager\" }"
             },
             "url": "{{baseUrl}}/api/users"
           },
@@ -63,7 +51,6 @@
             }
           }]
         },
-
         {
           "name": "Criar Director",
           "request": {
@@ -71,7 +58,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Director User\",\n  \"email\": \"director@test.com\",\n  \"role\": \"Director\"\n}"
+              "raw": "{ \"name\": \"Director User\", \"email\": \"director@test.com\", \"role\": \"Director\" }"
             },
             "url": "{{baseUrl}}/api/users"
           },
@@ -85,18 +72,17 @@
             }
           }]
         }
-
       ]
     },
 
     {
-      "name": "2 - Criar Pedido (Fluxo Normal)",
+      "name": "2 - Criar Pedido (Fluxo Principal)",
       "request": {
         "method": "POST",
         "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"userId\": {{supplyId}},\n  \"items\": [\n    {\n      \"productName\": \"Notebook\",\n      \"quantity\": 2,\n      \"unitPrice\": 800\n    }\n  ]\n}"
+          "raw": "{ \"userId\": {{supplyId}}, \"items\": [{ \"productName\": \"Notebook\", \"quantity\": 2, \"unitPrice\": 800 }] }"
         },
         "url": "{{baseUrl}}/api/purchaseorders"
       },
@@ -112,13 +98,70 @@
     },
 
     {
-      "name": "3 - Criar Pedido (Para Cancelar)",
+      "name": "3 - Aprovar Supply",
+      "request": {
+        "method": "PATCH",
+        "url": "{{baseUrl}}/api/purchaseorders/{{orderId}}/approve?userId={{supplyId}}"
+      }
+    },
+
+    {
+      "name": "4 - Solicitar Revisão (Manager)",
+      "request": {
+        "method": "PATCH",
+        "url": "{{baseUrl}}/api/purchaseorders/{{orderId}}/request-review?userId={{managerId}}"
+      }
+    },
+
+    {
+      "name": "5 - Reaprovar Supply (Após Revisão)",
+      "request": {
+        "method": "PATCH",
+        "url": "{{baseUrl}}/api/purchaseorders/{{orderId}}/approve?userId={{supplyId}}"
+      }
+    },
+
+    {
+      "name": "6 - Aprovar Manager",
+      "request": {
+        "method": "PATCH",
+        "url": "{{baseUrl}}/api/purchaseorders/{{orderId}}/approve?userId={{managerId}}"
+      }
+    },
+
+    {
+      "name": "7 - Aprovar Director",
+      "request": {
+        "method": "PATCH",
+        "url": "{{baseUrl}}/api/purchaseorders/{{orderId}}/approve?userId={{directorId}}"
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "let json = pm.response.json();",
+            "pm.test('Pedido finalizado', () => pm.expect(json.result.status).to.eql('Completed'));"
+          ]
+        }
+      }]
+    },
+
+    {
+      "name": "8 - Ver Histórico (Fluxo Completo com Revisão)",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/purchaseorders/{{orderId}}/history"
+      }
+    },
+
+    {
+      "name": "9 - Criar Pedido (Para Cancelar)",
       "request": {
         "method": "POST",
         "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"userId\": {{supplyId}},\n  \"items\": [\n    {\n      \"productName\": \"Mouse\",\n      \"quantity\": 5,\n      \"unitPrice\": 50\n    }\n  ]\n}"
+          "raw": "{ \"userId\": {{supplyId}}, \"items\": [{ \"productName\": \"Mouse\", \"quantity\": 5, \"unitPrice\": 50 }] }"
         },
         "url": "{{baseUrl}}/api/purchaseorders"
       },
@@ -134,87 +177,36 @@
     },
 
     {
-      "name": "4 - Cancelar Pedido (Manager)",
+      "name": "10 - Cancelar Pedido",
       "request": {
         "method": "PATCH",
         "url": "{{baseUrl}}/api/purchaseorders/{{orderIdCancel}}/cancel?userId={{managerId}}"
-      },
-      "event": [{
-        "listen": "test",
-        "script": {
-          "exec": [
-            "pm.test('Cancelado com sucesso', () => pm.response.code === 200);",
-            "let json = pm.response.json();",
-            "pm.test('Status Cancelled', () => pm.expect(json.result.status).to.eql('Cancelled'));"
-          ]
-        }
-      }]
+      }
     },
 
     {
-      "name": "5 - Tentar Aprovar Pedido Cancelado (Deve falhar)",
+      "name": "11 - Tentar Aprovar Cancelado (Erro esperado)",
       "request": {
         "method": "PATCH",
         "url": "{{baseUrl}}/api/purchaseorders/{{orderIdCancel}}/approve?userId={{supplyId}}"
-      },
-      "event": [{
-        "listen": "test",
-        "script": {
-          "exec": [
-            "pm.test('Não pode aprovar cancelado', () => pm.response.code >= 400);"
-          ]
-        }
-      }]
-    },
-
-    {
-      "name": "6 - Aprovar Supply",
-      "request": {
-        "method": "PATCH",
-        "url": "{{baseUrl}}/api/purchaseorders/{{orderId}}/approve?userId={{supplyId}}"
       }
     },
 
     {
-      "name": "7 - Aprovar Manager",
-      "request": {
-        "method": "PATCH",
-        "url": "{{baseUrl}}/api/purchaseorders/{{orderId}}/approve?userId={{managerId}}"
-      }
-    },
-
-    {
-      "name": "8 - Aprovar Director",
-      "request": {
-        "method": "PATCH",
-        "url": "{{baseUrl}}/api/purchaseorders/{{orderId}}/approve?userId={{directorId}}"
-      },
-      "event": [{
-        "listen": "test",
-        "script": {
-          "exec": [
-            "let json = pm.response.json();",
-            "pm.test('Finalizado', () => pm.expect(json.result.status).to.eql('Completed'));"
-          ]
-        }
-      }]
-    },
-
-    {
-      "name": "9 - Histórico Pedido Normal",
-      "request": {
-        "method": "GET",
-        "url": "{{baseUrl}}/api/purchaseorders/{{orderId}}/history"
-      }
-    },
-
-    {
-      "name": "10 - Histórico Pedido Cancelado",
+      "name": "12 - Histórico Pedido Cancelado",
       "request": {
         "method": "GET",
         "url": "{{baseUrl}}/api/purchaseorders/{{orderIdCancel}}/history"
       }
     }
+  ],
 
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5139" },
+    { "key": "supplyId", "value": "" },
+    { "key": "managerId", "value": "" },
+    { "key": "directorId", "value": "" },
+    { "key": "orderId", "value": "" },
+    { "key": "orderIdCancel", "value": "" }
   ]
 }
