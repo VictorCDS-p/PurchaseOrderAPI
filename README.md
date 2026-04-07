@@ -34,6 +34,7 @@ PurchaseOrderAPI/
 │
 ├── Controllers/
 │   └── PurchaseOrdersController.cs
+│   └── UsersController.cs
 │
 ├── Application/
 │   ├── DTOs/
