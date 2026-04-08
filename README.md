@@ -1,5 +1,3 @@
----
-
 # PurchaseOrderAPI
 
 API REST desenvolvida em **C# (.NET 10)** para simular o processo de pedidos de compra com fluxo de aprovação hierárquico, conforme especificação do desafio técnico.
