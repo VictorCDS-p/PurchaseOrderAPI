@@ -1,3 +1,5 @@
+---
+
 # PurchaseOrderAPI
 
 API REST desenvolvida em **C# (.NET 10)** para simular o processo de pedidos de compra com fluxo de aprovação hierárquico, conforme especificação do desafio técnico.
@@ -24,6 +26,22 @@ Implementar uma API que represente o ciclo completo de um pedido de compra dentr
 * Entity Framework Core
 * SQL Server
 * Swagger (Swashbuckle)
+
+---
+
+## Pré-requisitos
+
+Antes de rodar o projeto, certifique-se de ter instalado:
+
+* .NET SDK 10 ou superior
+* SQL Server (Express ou LocalDB)
+* Entity Framework CLI
+
+### Instalação do Entity Framework CLI
+
+```bash
+dotnet tool install --global dotnet-ef
+```
 
 ---
 
@@ -164,7 +182,7 @@ appsettings.Development.json
 dotnet restore
 ```
 
-### 2. Criar migration (caso necessário)
+### 2. Criar migration
 
 ```bash
 dotnet ef migrations add InitialCreate
@@ -222,6 +240,40 @@ Fluxo sugerido de testes:
 3. Executar aprovações sequenciais (Supply → Manager → Director)
 4. Consultar histórico
 5. Testar cenários de revisão e cancelamento
+
+---
+
+## Problemas Comuns
+
+### Erro: `dotnet ef` não encontrado
+
+Instale a ferramenta global:
+
+```bash
+dotnet tool install --global dotnet-ef
+```
+
+---
+
+### Erro: Não é possível abrir o banco de dados "PurchaseDB"
+
+Isso ocorre quando o banco ainda não foi criado.
+
+Solução:
+
+```bash
+dotnet ef database update
+```
+
+---
+
+### Erro de SSL ao conectar no SQL Server
+
+Caso ocorra erro relacionado a certificado, adicione na connection string:
+
+```json
+TrustServerCertificate=True
+```
 
 ---
 
